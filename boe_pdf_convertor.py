@@ -13,8 +13,13 @@ from pdfminer.layout import LAParams
 from pdfminer.pdfpage import PDFPage
 from io import StringIO
 
+
+
 # CREATING THE EXCEL FILE WITH THE HEADERS
-path = r'C:\Users\hp\Desktop\Pyspark\BoePdfConvertor\PDF FILES\BOE.xlsx'
+path = r'C:\Users\hp\Desktop\BoePdfConvertor\BoePdfConvertor\PDF_FILES\BOE.xlsx'
+log_path = r'C:\Users\hp\Desktop\BoePdfConvertor\BoePdfConvertor\PDF_FILES\myLog.log'
+mypath = r'C:\Users\hp\Desktop\BoePdfConvertor\BoePdfConvertor\PDF_FILES'
+
 
 try:
     final_df1 = pd.read_excel(path, sheet_name="BOE_SUMMARY")
@@ -34,15 +39,14 @@ except:
         final_df4.to_excel(writer, sheet_name='Invoice_Details', index=False)
 
 # DEFINING LOG PATH AND CREATING LOG FILE
-log_path = r'C:\Users\hp\Desktop\Pyspark\BoePdfConvertor\PDF FILES\myLog.log'
 logging.basicConfig(filename=log_path, filemode='w', format='%(name)s - %(levelname)s - %(message)s')
 with open(log_path, 'w'):
     pass
 logging.warning('--------------------------------------------------')
 
 # GETTING DATA FROM PDF'S
-mypath = r'C:\Users\hp\Desktop\Pyspark\BoePdfConvertor\PDF FILES'
 for file in glob.glob(mypath + '\*.pdf'):
+    #Getting all the details from page1
     text = extract_text(file, page_numbers=[0])
     # print(text)
     table = camelot.read_pdf(file, pages='1')
@@ -50,10 +54,10 @@ for file in glob.glob(mypath + '\*.pdf'):
     df = pd.DataFrame(table[0].df)
 
     sum_type = ''.join(df.iloc[8][0].split(' ')[-4:-1])
+    #Checking wheather the PDF is BOE type or not
     if sum_type != 'BILLOFENTRY':
         logging.warning(f'THE {file} is not a BOE Type')
-        continue
-
+    #Getting all the details from page4  
     text3 = extract_text(file, page_numbers=[3])
     # print(text)
     table3 = camelot.read_pdf(file, pages='4')
@@ -76,13 +80,14 @@ for file in glob.glob(mypath + '\*.pdf'):
     lis5.insert(1, INVOICE_NO)
     lis5.insert(2, INVOICE_AMOUNT)
     lis5.insert(3, CURRANCY)
+    #Checking for duplicate invoices
     if not final_df4.empty:
         inv_list = final_df4['2.INVOICE NO'].tolist()
         if INVOICE_NO in inv_list:
             logging.warning(f'This Invoice {INVOICE_NO} duplicate is already exist')
             continue
 
-    #     ----------------------------------------------------------
+    #Extracting data from page1
     # ***********************************************************
     # FETCHING TOP DETAILS
     # ***********************************************************
@@ -1332,9 +1337,10 @@ for file in glob.glob(mypath + '\*.pdf'):
     final_df2 = final_df2.append(dataframe2)
     final_df3 = final_df3.append(dataframe3)
     final_df4 = final_df4.append(dataframe4)
+    
 
-
-with pd.ExcelWriter('C:/Users/hp/Desktop/BOE1/boe.xlsx') as writer:
+#Exporting data to ExcelSheet
+with pd.ExcelWriter(path) as writer:
     final_df1.to_excel(writer, sheet_name='BOE_SUMMARY',index=False)
     final_df2.to_excel(writer, sheet_name='Valuation_Details',index=False)
     final_df3.to_excel(writer, sheet_name='Duties',index=False)
