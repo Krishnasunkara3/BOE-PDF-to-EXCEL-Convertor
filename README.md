@@ -1,5 +1,5 @@
 # BOE-PDF-to-EXCEL-Convertor
-For running the code you need to install some requirements.
-For installing requirements use this command-- 'pip3 install -r requirements.txt'
-In requirements.txt all the required modules with their versions are mentioned.
-We recommend to use pycharm IDE to run the project.
+Prerequesties:- 
+Install Python--https://www.python.org/downloads/
+Install GhostScript--https://www.ghostscript.com/download.html
+Install Pycharm--https://www.jetbrains.com/pycharm/download/#section=windows
